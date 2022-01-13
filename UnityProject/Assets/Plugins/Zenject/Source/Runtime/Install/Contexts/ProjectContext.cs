@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using ModestTree;
 using UnityEngine;
@@ -313,8 +314,132 @@ namespace Zenject
 
             InstallSceneBindings(injectableMonoBehaviours);
 
+            //Install Bindings that are on scene
+            InstallGlobalAssetBindings();
+            
             InstallInstallers();
 
+        }
+        
+        public void InstallGlobalAssetBindings(GlobalAssetBinding bindingCmp)
+        {
+            var injectableMonoBehaviours = new List<MonoBehaviour>();
+            injectableMonoBehaviours.AddRange(bindingCmp.gameObject.GetComponents<MonoBehaviour>());
+            foreach (var instance in injectableMonoBehaviours)
+            {
+                _container.QueueForInject(instance);
+            }
+
+            foreach (var binding in injectableMonoBehaviours.OfType<GlobalAssetBinding>())
+            {
+                if (binding == null)
+                {
+                    continue;
+                }
+
+                if (binding.Context == null)
+                {
+                    binding.Context = this;
+                }
+
+                InstallGlobalAssetBinding(binding);
+            }
+        }
+
+        void InstallGlobalAssetBindings()
+        {
+            var globalAssetObjects       = GlobalAssetBinding.GetActiveObjects();
+            var injectableMonoBehaviours = new List<MonoBehaviour>();
+            foreach (var rootObj in globalAssetObjects)
+            {
+                if (rootObj != null)
+                {
+                    injectableMonoBehaviours.AddRange(rootObj.GetComponents<MonoBehaviour>());
+                }
+            }
+
+            foreach (var instance in injectableMonoBehaviours)
+            {
+                _container.QueueForInject(instance);
+            }
+
+            foreach (var binding in injectableMonoBehaviours.OfType<GlobalAssetBinding>())
+            {
+                if (binding == null)
+                {
+                    continue;
+                }
+
+                if (binding.Context == null)
+                {
+                    binding.Context = this;
+                }
+
+                InstallGlobalAssetBinding(binding);
+            }
+        }
+
+        void InstallGlobalAssetBinding(GlobalAssetBinding binding)
+        {
+            if (!binding.enabled)
+            {
+                return;
+            }
+
+            if (binding.Components == null || binding.Components.IsEmpty())
+            {
+                Log.Warn("Found empty list of components on ZenjectBinding on object '{0}'", binding.name);
+                return;
+            }
+
+            string identifier = null;
+
+            if (binding.Identifier.Trim().Length > 0)
+            {
+                identifier = binding.Identifier;
+            }
+
+            foreach (var component in binding.Components)
+            {
+                var bindType = binding.BindType;
+
+                if (component == null)
+                {
+                    Log.Warn("Found null component in ZenjectBinding on object '{0}'", binding.name);
+                    continue;
+                }
+
+                var componentType = component.GetType();
+
+                switch (bindType)
+                {
+                    case ZenjectBinding.BindTypes.Self:
+                    {
+                        Container.Bind(componentType).WithId(identifier).FromInstance(component);
+                        break;
+                    }
+                    case ZenjectBinding.BindTypes.BaseType:
+                    {
+                        Container.Bind(componentType.BaseType()).WithId(identifier).FromInstance(component);
+                        break;
+                    }
+                    case ZenjectBinding.BindTypes.AllInterfaces:
+                    {
+                        Container.Bind(componentType.Interfaces()).WithId(identifier).FromInstance(component);
+                        break;
+                    }
+                    case ZenjectBinding.BindTypes.AllInterfacesAndSelf:
+                    {
+                        Container.Bind(componentType.Interfaces().Concat(new[] {componentType}).ToArray())
+                            .WithId(identifier).FromInstance(component);
+                        break;
+                    }
+                    default:
+                    {
+                        throw Assert.CreateException();
+                    }
+                }
+            }
         }
     }
 }
