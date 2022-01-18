@@ -9,7 +9,7 @@ using Zenject;
 
 
 
-public class ProjectDependenciesInstaller<T> : ScriptableObjectInstaller<T> where T : ScriptableObjectInstaller<T>
+public class ProjectDependencyInstaller<T> : ScriptableObjectInstaller<T> where T : ScriptableObjectInstaller<T>
 {
     // public AppSettings     Settings;
     // public AppDependencies Dependencies;

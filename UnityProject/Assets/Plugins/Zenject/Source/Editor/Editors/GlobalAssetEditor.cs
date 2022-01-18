@@ -95,11 +95,32 @@ public class GlobalAssetEditor : Editor
 
     private int                _index;
     private GlobalAssetBinding _assetBinding;
+    private PrefabStage        _prefabStage;
 
     private void OnEnable()
     {
         _assetBinding = (GlobalAssetBinding) target;
         _index        = GlobalAssetBinding._assets.IndexOf(_assetBinding.gameObject);
+        _prefabStage  = PrefabStageUtility.GetPrefabStage(_assetBinding.gameObject);
+        if (_prefabStage)
+        {
+            Debug.Log("Enable Edit Gloabl Asset");
+            _prefabStage.prefabContentsRoot.hideFlags = HideFlags.None;
+        }
+
+        // PrefabStage.prefabSaving += PrefabStageOnprefabSaving;
+        // PrefabStage.prefabSaved += PrefabStageOnprefabSaving;
+    }
+
+    private void PrefabStageOnprefabSaving(GameObject go)
+    {
+        if (_prefabStage)
+        {
+            go           = _prefabStage.prefabContentsRoot;
+            go.hideFlags = HideFlags.None;
+            PrefabUtility.ApplyPrefabInstance(go, InteractionMode.AutomatedAction);
+            go.hideFlags = HideFlags.DontSave;
+        }
     }
 
     public override void OnInspectorGUI()
@@ -107,16 +128,34 @@ public class GlobalAssetEditor : Editor
         base.OnInspectorGUI();
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("");
+        EditorGUILayout.LabelField("Flags: " + _assetBinding.gameObject.hideFlags);
         // Event.current.mousePosition.
         if (GUILayout.Button("Save Prefab"))
         {
-            
-            GameObject         gameObject   = PrefabUtility.GetOutermostPrefabInstanceRoot(_assetBinding.gameObject);
-            gameObject.hideFlags = HideFlags.None;
-            PrefabUtility.ApplyPrefabInstance(gameObject, InteractionMode.AutomatedAction);
-            gameObject.hideFlags = HideFlags.DontSave;
+            if (_prefabStage)
+            {
+            }
+            else
+            {
+                GameObject root = null;
+                root           = PrefabUtility.GetOutermostPrefabInstanceRoot(_assetBinding.gameObject);
+                root.hideFlags = HideFlags.None;
+                PrefabUtility.ApplyPrefabInstance(root, InteractionMode.AutomatedAction);
+                root.hideFlags = HideFlags.DontSave;
+            }
         }
+
         EditorGUILayout.EndHorizontal();
+    }
+
+    public void OnDisable()
+    {
+        if (_prefabStage)
+        {
+            Debug.Log("Distable Edit Gloabl Asset");
+            _prefabStage.prefabContentsRoot.hideFlags = HideFlags.DontSave;
+        }
+        // PrefabStage.prefabSaving -= PrefabStageOnprefabSaving;
     }
 
     public void OnDestroy()

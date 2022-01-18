@@ -1,16 +1,33 @@
+
+
+#define GLOBAL_ASSET_DEBUG
+
 using System;
 using System.Collections.Generic;
+using ModestTree;
+#if UNITY_EDITOR
 using UnityEditor;
+using UnityEditor.SceneManagement;
+#endif
 using UnityEngine;
-using UnityEngine.Assertions;
 using Zenject;
+using Assert = UnityEngine.Assertions.Assert;
 
 #if UNITY_EDITOR
 [ExecuteInEditMode, InitializeOnLoad]
+// [ExecuteAlways, InitializeOnLoad]
 #endif
 public class GlobalAssetBinding : MonoBehaviour, ISerializationCallbackReceiver
 {
     public static List<GameObject> _assets = new List<GameObject>();
+
+    private static void Log(string message)
+    {
+        #if GLOBAL_ASSET_DEBUG
+        Debug.Log(message);
+        #endif
+    }
+    
 
     public static void RemoveAssets(GameObject assetObject)
     {
@@ -77,6 +94,7 @@ public class GlobalAssetBinding : MonoBehaviour, ISerializationCallbackReceiver
 
     private void Awake()
     {
+        Log("Global Asset Awake");
         if (Application.isPlaying)
         {
             Assert.IsFalse(_assets.Contains(gameObject));
@@ -84,16 +102,25 @@ public class GlobalAssetBinding : MonoBehaviour, ISerializationCallbackReceiver
         }
     }
 
+    private void Start()
+    {
+        Log("Global Asset Start");
+    }
+
+
     // Update is called once per frame
     void Update()
     {
-        if (!_editorAwaked && !Application.isPlaying)
-        {
+#if UNITY_EDITOR
+
+        if (!_editorAwaked && !Application.isPlaying && !PrefabStageUtility.GetPrefabStage(gameObject))
+        {   
             Assert.IsFalse(_assets.Contains(gameObject));
             gameObject.hideFlags = HideFlags.DontSave;
             AddAsset(gameObject);
             _editorAwaked = true;
         }
+#endif
     }
 
     private void OnDestroy()
@@ -108,5 +135,5 @@ public class GlobalAssetBinding : MonoBehaviour, ISerializationCallbackReceiver
     public void OnAfterDeserialize()
     {
     }
-
+    
 }
