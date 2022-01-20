@@ -2,6 +2,7 @@
 // using GameTemplate.AppServices;
 // using GameTemplate.AppStates;
 // using GameTemplate.AppStates.GameStates;
+
 using ModestTree;
 // using PlotTwist.UniApp.Services;
 using UnityEngine;
@@ -29,9 +30,9 @@ public class ProjectDependencyInstaller<T> : ScriptableObjectInstaller<T> where 
 
         foreach (var assetBinding in globalAssetDependencies)
         {
-            var bindType   = assetBinding.BindType;
+            var bindType = assetBinding.BindType;
             var identifier = assetBinding.Identifier;
-            var exist      = false;
+            var exist = false;
             if (assetBinding.Components.Length > 0)
             {
                 var componentType = assetBinding.Components[0].GetType();
@@ -64,20 +65,29 @@ public class ProjectDependencyInstaller<T> : ScriptableObjectInstaller<T> where 
             if (!exist)
             {
                 var instance = GameObject.Instantiate(assetBinding.gameObject, Container.DefaultParent, true);
-                DontDestroyOnLoad(instance);
-                ProjectContext.Instance.InstallGlobalAssetBindings(assetBinding);
-                foreach (var cmp in assetBinding.Components)
-                {
-                _container.Inject(cmp);
-                }
-                
-                var a = 1;
-                // _container.InjectGameObject(instance); 
+                // DontDestroyOnLoad(instance);
+                ProjectContext.Instance.InstallGlobalAssetBindings(instance.GetComponent<GlobalAssetBinding>());
+                // foreach (var cmp in assetBinding.Components)
+                // {
+                // _container.Inject(cmp);
+                // }
+
+                // for (int i = 0; i < assetBinding.Components.Length; i++)
+                // {
+                    // _container.Inject(assetBinding.Components[i] as MonoBehaviour);
+                // }
+
+                // foreach (var cmp in instance.GetComponents<MonoBehaviour>())
+                // {
+                    // _container.Inject(cmp);
+                // }
+
+
+                // _container.InjectGameObject(instance);
             }
         }
 
         //GetAllGlobal Assets Repository/From Resources ?
         //Check if given Type Exists if not Bind/Inject/Spawn
     }
-
 }
