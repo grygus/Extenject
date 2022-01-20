@@ -6,14 +6,16 @@ using ModestTree;
 // using PlotTwist.UniApp.Services;
 using UnityEngine;
 using Zenject;
-
+using Zenject.ReflectionBaking.Mono.Cecil;
 
 
 public class ProjectDependencyInstaller<T> : ScriptableObjectInstaller<T> where T : ScriptableObjectInstaller<T>
 {
     // public AppSettings     Settings;
     // public AppDependencies Dependencies;
-    [SerializeField]private GlobalAssetBinding[] globalAssetDependencies;
+    [SerializeField] private GlobalAssetBinding[] globalAssetDependencies;
+    [Inject]                 DiContainer          _container = null;
+
 
     public override void InstallBindings()
     {
@@ -64,6 +66,13 @@ public class ProjectDependencyInstaller<T> : ScriptableObjectInstaller<T> where 
                 var instance = GameObject.Instantiate(assetBinding.gameObject, Container.DefaultParent, true);
                 DontDestroyOnLoad(instance);
                 ProjectContext.Instance.InstallGlobalAssetBindings(assetBinding);
+                foreach (var cmp in assetBinding.Components)
+                {
+                _container.Inject(cmp);
+                }
+                
+                var a = 1;
+                // _container.InjectGameObject(instance); 
             }
         }
 

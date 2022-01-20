@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   globalAssetDependencies:
   - {fileID: 8477761349076894853, guid: ada42d2ed8a12d547abd193f89e16711, type: 3}
+  - {fileID: 3114621485233525849, guid: 3e98e78fcb66efe4fb3f39c6c7ac26c5, type: 3}
