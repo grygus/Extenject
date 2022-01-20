@@ -129,20 +129,16 @@ public class GlobalAssetEditor : Editor
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("");
         EditorGUILayout.LabelField("Flags: " + _assetBinding.gameObject.hideFlags);
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal();
         // Event.current.mousePosition.
-        if (GUILayout.Button("Save Prefab"))
+        if (!_prefabStage && GUILayout.Button("Save Prefab"))
         {
-            if (_prefabStage)
-            {
-            }
-            else
-            {
-                GameObject root = null;
-                root           = PrefabUtility.GetOutermostPrefabInstanceRoot(_assetBinding.gameObject);
-                root.hideFlags = HideFlags.None;
-                PrefabUtility.ApplyPrefabInstance(root, InteractionMode.AutomatedAction);
-                root.hideFlags = HideFlags.DontSave;
-            }
+            GameObject root = null;
+            root           = PrefabUtility.GetOutermostPrefabInstanceRoot(_assetBinding.gameObject);
+            root.hideFlags = HideFlags.None;
+            PrefabUtility.ApplyPrefabInstance(root, InteractionMode.AutomatedAction);
+            root.hideFlags = HideFlags.DontSave;
         }
 
         EditorGUILayout.EndHorizontal();

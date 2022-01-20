@@ -1,6 +1,6 @@
 
 
-#define GLOBAL_ASSET_DEBUG
+// #define GLOBAL_ASSET_DEBUG
 
 using System;
 using System.Collections.Generic;
